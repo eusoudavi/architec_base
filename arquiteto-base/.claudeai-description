@@ -1,0 +1,1 @@
+Arquiteto Spring Boot com o padrão de classes base (BaseController, BaseService, BaseRepository, ServiceContract). Use ao criar backend, recurso ou CRUD, ou revisar código nesse padrão.
