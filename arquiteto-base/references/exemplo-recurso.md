@@ -86,6 +86,11 @@ public class PastoService extends BaseService<Pasto, String>
     }
 
     @Override
+    protected String nomeRecurso() {
+        return "Pasto";
+    }
+
+    @Override
     protected void verificarAcesso(Pasto pasto) {
         verificarFazenda(pasto.getFazendaId());
     }
@@ -170,5 +175,5 @@ class PastoServiceTest {
 }
 ```
 
-No `@WebMvcTest` do controller, confira: `POST /new` → 201 com corpo `PastoDto`;
+No `@WebMvcTest` do controller, confira: `POST /api/pastos` → 201 com corpo `PastoDto`;
 corpo inválido → 400 com `campos`; `DELETE /{id}` → 204; id inexistente → 404.

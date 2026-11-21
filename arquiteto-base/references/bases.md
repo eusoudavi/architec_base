@@ -66,6 +66,9 @@ public abstract class BaseService<E, ID> {
 
     protected abstract BaseRepository<E, ID> getRepository();
 
+    /** Nome usado nas mensagens de erro, ex.: "Pasto". */
+    protected abstract String nomeRecurso();
+
     /**
      * Garante que o usuário atual pode ver/alterar a entidade.
      * Deve lançar NotFoundException quando não puder (404 não revela que o id existe).
@@ -76,7 +79,7 @@ public abstract class BaseService<E, ID> {
     /** Único caminho para obter uma entidade por id. */
     protected E buscarOuFalhar(ID id) {
         E entity = getRepository().findById(id)
-                .orElseThrow(() -> new NotFoundException("Registro não encontrado: " + id));
+                .orElseThrow(() -> new NotFoundException(nomeRecurso() + " " + id + " não encontrado"));
         verificarAcesso(entity);
         return entity;
     }
@@ -101,15 +104,16 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * Endpoints padrão de um recurso. A subclasse só define @RequestMapping e getService().
- * Sobrescreva um método apenas se o contrato HTTP daquele recurso for diferente.
+ * Endpoints REST padrão de um recurso. A subclasse só define @RequestMapping e getService().
+ * Rotas de sub-coleção (ex.: /api/fazendas/{id}/pastos) ficam num controller próprio,
+ * porque sobrescrever um método herdado não muda a rota dele.
  */
 public abstract class BaseController<Request, Dto, ShallowDto, ID,
         S extends ServiceContract<Request, Dto, ShallowDto, ID>> {
 
     protected abstract S getService();
 
-    @GetMapping("/listAll")
+    @GetMapping
     public ResponseEntity<List<ShallowDto>> listAll() {
         return ResponseEntity.ok(getService().listar());
     }
@@ -119,7 +123,7 @@ public abstract class BaseController<Request, Dto, ShallowDto, ID,
         return ResponseEntity.ok(getService().buscarPorId(id));
     }
 
-    @PostMapping("/new")
+    @PostMapping
     public ResponseEntity<Dto> createNew(@RequestBody @Valid Request request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(getService().cadastrar(request));
     }
@@ -136,6 +140,9 @@ public abstract class BaseController<Request, Dto, ShallowDto, ID,
     }
 }
 ```
+
+Em projeto legado com `/listAll` e `/new` já consumidos pelo front, troque só as duas
+anotações acima.
 
 O Spring MVC resolve os tipos genéricos (`Request`, `ID`) pela subclasse concreta, então
 `@RequestBody`, `@Valid` e `@PathVariable` funcionam normalmente nos métodos herdados.
